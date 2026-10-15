@@ -73,6 +73,7 @@ details.opt>summary small{color:var(--mut);font-weight:600}
 details.opt .g{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:700;font-size:13.5px;z-index:9;max-width:90%}
 .seg{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.rf{flex-wrap:wrap}.rf .btn{flex:1 1 90px;padding:10px 6px;font-size:14px;justify-content:center}
 fieldset{min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 details.opt .g{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .f input[type=date]{display:block;width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;height:44px;line-height:normal;text-align:left}
@@ -187,7 +188,7 @@ function list(){
  <div class="chips">${['all','konf','per','siap','sel','tut'].map(k=>`<button class="fc" data-f="${k}" aria-pressed="${flt==k}">${k=='all'?'':ic(k,13)}${k=='all'?'Semua':ST[k]} ${cnt(k)}</button>`).join('')}</div>
  <section class="blk">${r.length?r.map(p=>prow(p)).join(''):'<div class="empty">Tidak ada pasien yang cocok. Ubah filter atau tekan Pasien baru.</div>'}</section>`}
 function more(){return`<h1>Lainnya</h1>
- <section class="blk"><div class="bh"><span class="ico i-siap">${ic('clip')}</span>Laporan konferensi</div><div class="empty">Unduh hasil konferensi per tanggal dalam bentuk PDF atau Word, dengan format laporan yang lama.</div><button class="btn p" data-rep style="margin:0 0 12px">${ic('clip',16)} Buka laporan</button></section>
+ <section class="blk"><div class="bh"><span class="ico i-siap">${ic('clip')}</span>Laporan konferensi</div><div class="empty">Unduh hasil konferensi per tanggal dalam bentuk PDF atau Excel, dengan format laporan yang lama.</div><button class="btn p" data-rep style="margin:0 0 12px">${ic('clip',16)} Buka laporan</button></section>
  <div class="sub">Coba tampilan sesuai peran:</div>
  <div class="seg">${Object.entries(ROLES).map(([k,l])=>`<button class="fc" data-role="${k}" aria-pressed="${role==k}">${l}</button>`).join('')}</div>
  <section class="blk"><div class="bh">Belum dipasang di model ini</div>
@@ -251,7 +252,7 @@ $('#sh').addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a
  else if(x=='hasil'){cur.perlu=false;cur.verif=null;toast('Kembali ke konferensi untuk diputuskan ulang');drawForm(1)}
  else if(x=='done'){cur.selesai=TODAY;commit('Tindakan ditandai selesai')}});
 /* ---------- laporan (format lama) ---------- */
-const LIB={jspdf:'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',autotable:'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js',docx:'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js'};
+const LIB={jspdf:'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',autotable:'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js',excel:'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'};
 const loaded={};const loadScript=s=>loaded[s]||(loaded[s]=new Promise((res,rej)=>{const e=document.createElement('script');e.src=s;e.onload=res;e.onerror=()=>{delete loaded[s];rej(new Error('load'))};document.head.appendChild(e)}));
 let dl=null,rep=null;
 try{window.claude&&window.claude.use&&window.claude.use('downloads').then(d=>{dl=d}).catch(()=>{})}catch(e){}
@@ -284,11 +285,11 @@ function drawReport(){
  ${rows.length?`<p class="sub">Kategori: ${esc(Object.entries(byC).map(([a,b])=>a+' '+b).join(' · '))}<br>Status: ${esc(Object.entries(byS).map(([a,b])=>a+' '+b).join(' · '))}</p>
  <div class="tw"><table class="rep"><thead><tr><th>No</th><th>Nama</th><th>No RM</th><th>Kesimpulan post tindakan</th><th>Hasil echo</th><th>Keputusan conference</th></tr></thead><tbody>${g.map(x=>`<tr class="grp"><td colspan="6">Konferensi ${esc(fmtLong(x.date))}</td></tr>`+x.rows.map(p=>`<tr><td>${++n}</td><td>${esc(p.nama)}</td><td>${esc(p.rm)}</td><td>${esc(p.dxPasca)}</td><td>${esc(echoCell(p))}</td><td>${esc(decCell(p))}</td></tr>`).join('')).join('')}</tbody></table></div>`:'<div class="empty">Tidak ada pasien dengan tanggal konferensi pada rentang ini.</div>'}
  <p class="sub" id="repMsg" role="status"></p></div>
- <div class="sf"><button class="btn" id="repWord"${off}>Unduh Word</button><button class="btn p" id="repPdf"${off}>Unduh PDF</button></div>`;
+ <div class="sf rf"><button class="btn" id="repXls"${off}>Unduh Excel</button><button class="btn p" id="repPdf"${off}>Unduh PDF</button></div>`;
  const upd=()=>{rep.from=$('#rFrom').value||rep.from;rep.to=$('#rTo').value||rep.to;if(rep.from>rep.to){const t=rep.from;rep.from=rep.to;rep.to=t}rep.which=$('#rWhich').value;drawReport()};
  $('#rFrom').onchange=upd;$('#rTo').onchange=upd;$('#rWhich').onchange=upd;
  $('#sh').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{[rep.from,rep.to]=Q[+b.dataset.q][1]();drawReport()});
- $('#repPdf').onclick=()=>exportPdf(rows,K);$('#repWord').onclick=()=>exportWord(rows,K)}
+ $('#repPdf').onclick=()=>exportPdf(rows,K);$('#repXls').onclick=()=>exportExcel(rows,K)}
 const rmsg=t=>{const m=$('#repMsg');if(m)m.textContent=t};
 async function saveFile(name,data){const blob=data instanceof Blob?data:new Blob([data]);
  if(dl){try{await dl.save({filename:name,data:blob})}catch(e){if(e&&e.code=='declined')return;rmsg('File tidak bisa disimpan ('+((e&&e.code)||'coba lagi')+').')}return}
@@ -317,23 +318,28 @@ async function exportPdf(rows,K){
   await saveFile(`Laporan-Konferensi-IDIK_${rep.from}_sd_${rep.to}.pdf`,doc.output('blob'));
  }catch(e){rmsg('PDF gagal disusun. Periksa koneksi lalu coba lagi.')}
  if(b.isConnected){b.disabled=false;b.textContent='Unduh PDF'}}
-async function exportWord(rows,K){
- const b=$('#repWord');b.disabled=true;b.textContent='Menyusun Word…';
- try{await loadScript(LIB.docx);const D=window.docx;
-  const F='Times New Roman',TW=15398,cw=[5,15,10,18,26,26].map(x=>Math.round(TW*x/100));
-  const run=(t,o)=>new D.TextRun(Object.assign({text:t,font:F,size:20},o||{}));
-  const lines=t=>String(t||'').split('\n').map((l,i)=>run(l,i?{break:1}:{}));
-  const cell=(t,i,o)=>{o=o||{};return new D.TableCell({width:{size:cw[i],type:D.WidthType.DXA},shading:o.h?{type:D.ShadingType.CLEAR,color:'auto',fill:'D9E4E6'}:undefined,margins:{top:60,bottom:60,left:90,right:90},children:[new D.Paragraph({alignment:o.c?D.AlignmentType.CENTER:D.AlignmentType.LEFT,children:o.h?[run(t,{bold:true})]:lines(t)})]})};
-  const para=(t,r,p)=>new D.Paragraph(Object.assign({alignment:D.AlignmentType.CENTER,children:[run(t,r)]},p||{}));
-  let n=0;const kids=[para(REP_TITLE,{bold:true,size:28}),para(periodTxt()),para(kpiTxt(rows,K),{size:18,color:'555555'},{spacing:{after:240}})];
+async function exportExcel(rows,K){
+ const b=$('#repXls');b.disabled=true;b.textContent='Menyusun Excel…';
+ try{await loadScript(LIB.excel);
+  const wb=new ExcelJS.Workbook();wb.creator='Heart Team Tracker';
+  const ws=wb.addWorksheet('Laporan',{pageSetup:{orientation:'landscape',paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.3,footer:.3}},views:[{showGridLines:false}]});
+  ws.columns=[{width:6},{width:24},{width:14},{width:32},{width:46},{width:46}];
+  const F='Times New Roman',bd={style:'thin',color:{argb:'FFBEC8C8'}},B={top:bd,left:bd,bottom:bd,right:bd},WD={4:30,5:44,6:44};
+  const line=(t,o)=>{const r=ws.addRow([t]);ws.mergeCells(r.number,1,r.number,6);const c=r.getCell(1);c.font=Object.assign({name:F,size:11},o.f||{});c.alignment={horizontal:o.l?'left':'center',vertical:'middle',wrapText:true};if(o.h)r.height=o.h;return r};
+  line(REP_TITLE,{f:{bold:true,size:14},h:24});line(periodTxt(),{f:{size:10.5}});line(kpiTxt(rows,K),{f:{size:9.5,color:{argb:'FF555555'}}});
+  let n=0;
   groups(rows).forEach(x=>{
-   kids.push(new D.Paragraph({spacing:{before:240,after:80},children:[run('Tanggal pelaksanaan conference : '+fmtLong(x.date),{bold:true})]}));
-   kids.push(new D.Table({width:{size:TW,type:D.WidthType.DXA},columnWidths:cw,rows:[new D.TableRow({tableHeader:true,children:['No','Nama','No RM','Kesimpulan Post Tindakan','Hasil Echo','Keputusan conference'].map((h,i)=>cell(h,i,{h:1}))})].concat(x.rows.map(p=>new D.TableRow({children:[cell((++n)+'.',0,{c:1}),cell(p.nama,1),cell(p.rm,2),cell(p.dxPasca,3),cell(echoCell(p),4),cell(decCell(p),5)]})))}))});
-  kids.push(new D.Paragraph({spacing:{before:280},children:[run('Dicetak dari Heart Team Tracker '+fmtLong(TODAY)+' · RAHASIA',{size:16,color:'555555'})]}));
-  const doc=new D.Document({sections:[{properties:{page:{size:{orientation:D.PageOrientation.LANDSCAPE,width:11906,height:16838},margin:{top:720,bottom:720,left:720,right:720}}},children:kids}]});
-  await saveFile(`Laporan-Konferensi-IDIK_${rep.from}_sd_${rep.to}.docx`,await D.Packer.toBlob(doc));
- }catch(e){rmsg('Word gagal disusun. Periksa koneksi lalu coba lagi.')}
- if(b.isConnected){b.disabled=false;b.textContent='Unduh Word'}}
+   ws.addRow([]);line('Tanggal pelaksanaan conference : '+fmtLong(x.date),{f:{bold:true,size:11},l:1,h:20});
+   const hr=ws.addRow(['No','Nama','No RM','Kesimpulan Post Tindakan','Hasil Echo','Keputusan conference']);
+   hr.eachCell(c=>{c.font={name:F,size:10,bold:true,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0B3B47'}};c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border=B});hr.height=22;
+   x.rows.forEach(p=>{const r=ws.addRow([++n,p.nama||'',p.rm||'',p.dxPasca||'',echoCell(p),decCell(p)]);
+    r.eachCell({includeEmpty:true},(c,ci)=>{c.font={name:F,size:10};c.alignment={vertical:'top',wrapText:true,horizontal:ci==1?'center':'left'};c.border=B});
+    const ln=Math.max(1,...[4,5,6].map(i=>String(r.getCell(i).value||'').split('\n').reduce((a,t)=>a+Math.max(1,Math.ceil(t.length/WD[i])),0)));r.height=Math.max(18,ln*13.5)})});
+  ws.addRow([]);line('Dicetak dari Heart Team Tracker '+fmtLong(TODAY)+' · RAHASIA',{f:{size:8,color:{argb:'FF555555'}},l:1});
+  const buf=await wb.xlsx.writeBuffer();
+  await saveFile(`Laporan-Konferensi-IDIK_${rep.from}_sd_${rep.to}.xlsx`,new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+ }catch(e){rmsg('Excel gagal disusun. Periksa koneksi lalu coba lagi.')}
+ if(b.isConnected){b.disabled=false;b.textContent='Unduh Excel'}}
 /* ---------- global ---------- */
 document.addEventListener('click',e=>{
  if(e.target.closest('[data-rep]')){openReport();return}
