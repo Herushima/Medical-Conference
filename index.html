@@ -73,6 +73,11 @@ details.opt>summary small{color:var(--mut);font-weight:600}
 details.opt .g{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:700;font-size:13.5px;z-index:9;max-width:90%}
 .seg{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+fieldset{min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+details.opt .g{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.f input[type=date]{display:block;width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;height:44px;line-height:normal;text-align:left}
+.f input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+.f input[type=date]::-webkit-datetime-edit{padding:0}
 .rng{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rng .f:last-child{grid-column:1/-1}
 .kg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px}.kg div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}.kg b{display:block;font-size:22px;color:var(--pri)}.kg span{font-size:12px;color:var(--mut)}
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:8px}
@@ -141,8 +146,8 @@ const V='Menunggu verifikasi dokter';
 const todo=p=>!p.keputusan?'Isi keputusan konferensi':!sigOk(p)?'Pilih 2 SpJP + 1 SpBTKV':V;
 const by=a=>(new Date().getFullYear()-a)+'-06-15';
 function seed(){const m=(o)=>Object.assign({id:'p'+Math.random().toString(36).slice(2,8)},o);return[
-m({nama:'Sutrisno',rm:'123456',telp:'081234560001',jk:'L',tglLahir:by(62),usia:'62',dx:'CAD 3VD dengan LM disease',dxPasca:'CAD 3VD LM disease',ef:'35',tapse:'1.6',syn:'32',lm:'stenosis 60%',lad:'proksimal 90%',lcx:'mid 70%',rca:'mid CTO',mitral:'MR mild',pci:'Stent LAD 2019',tglKonf:add(-3),keputusan:'CABG di RS Iskak; jika menolak lakukan DSE',kat:'cabg',sp1:SP[0],sp2:SP[1],sb:BT[0]}),
-m({nama:'Siti Aminah',rm:'123457',telp:'081234560002',jk:'P',tglLahir:by(58),usia:'58',dx:'NSTEMI, 2VD',dxPasca:'NSTEMI 2VD',ef:'45',lad:'mid 80%',rca:'proksimal 70%',tglKonf:add(-5),perlu:true,jp:'dse',tglPeriksa:add(2)}),
+m({nama:'Sutrisno',rm:'123456',telp:'081234560001',jk:'L',tglLahir:by(62),usia:'62',dx:'CAD 3VD dengan LM disease',dxPasca:'CAD 3VD LM disease',ef:'35',tapse:'1.6',syn:'32',lm:'stenosis 60%',lad:'proksimal 90%',lcx:'mid 70%',rca:'mid CTO',mitral:'MR mild',pci:'Stent LAD 2019',ureum:'32',kreatinin:'1.1',gda:'118',gdp:'104',gd2pp:'152',hba1c:'6.4',hiv:'NR',hbsag:'NR',tglKonf:add(-3),keputusan:'CABG di RS Iskak; jika menolak lakukan DSE',kat:'cabg',sp1:SP[0],sp2:SP[1],sb:BT[0]}),
+m({nama:'Siti Aminah',rm:'123457',telp:'081234560002',jk:'P',tglLahir:by(58),usia:'58',dx:'NSTEMI, 2VD',dxPasca:'NSTEMI 2VD',ef:'45',lad:'mid 80%',rca:'proksimal 70%',ureum:'28',kreatinin:'0.9',gda:'132',gdp:'98',gd2pp:'145',hba1c:'6.1',hiv:'NR',hbsag:'NR',tglKonf:add(-5),perlu:true,jp:'dse',tglPeriksa:add(2)}),
 m({nama:'Bambang Hartono',rm:'123458',telp:'081234560003',jk:'L',tglLahir:by(66),usia:'66',dx:'Iskemik CMP, EF 30%',tglKonf:add(-9),perlu:true,jp:'dse',tglPeriksa:add(1)}),
 m({nama:'Wahyuni',rm:'123459',telp:'081234560004',jk:'P',tglLahir:by(61),usia:'61',dx:'CCS, riwayat PCI LAD',tglKonf:add(-14),perlu:true,jp:'dca'}),
 m({nama:'Slamet Riyadi',rm:'123460',telp:'081234560005',jk:'L',tglLahir:by(55),usia:'55',dx:'CAD 1VD proksimal LAD',dxPasca:'CAD 1VD proksimal LAD',ef:'55',lm:'normal',lad:'proksimal 90%',tglKonf:add(-6),keputusan:'PCI LAD',kat:'pci',sp1:SP[2],sp2:SP[3],sb:BT[1],verif:{by:'dokter',at:add(-4)},jenisTindakan:'PCI LAD',tglTindakan:add(3)}),
@@ -194,7 +199,7 @@ function render(){$('#app').innerHTML=tab=='home'?home():tab=='list'?list():more
  $('#fab').hidden=tab=='more'}
 /* ---------- form ---------- */
 const opt=(o,v,ex)=>(Array.isArray(o)?o.map(x=>[x,x]):Object.entries(o)).filter(([k])=>k!==ex).map(([k,l])=>`<option value="${esc(k)}"${k===v?' selected':''}>${esc(l)}</option>`).join('');
-const fld=(k,l,t,x)=>{x=x||{};const d=x.d?' disabled':'';return`<label class="f${x.w?' w':''}"><span>${l}</span>${t=='ta'?`<textarea data-k="${k}" rows="2" placeholder="${x.ph||''}"${d}>${esc(cur[k])}</textarea>`:t=='sel'?`<select data-k="${k}"${d}><option value="">Pilih…</option>${opt(x.o,cur[k]||'',x.ex)}</select>`:`<input data-k="${k}" type="${t||'text'}" value="${esc(cur[k])}" placeholder="${x.ph||''}"${d}${t=='number'?' inputmode="decimal"':''}>`}</label>`};
+const fld=(k,l,t,x)=>{x=x||{};const d=x.d?' disabled':'';return`<label class="f${x.w?' w':''}"><span>${l}</span>${t=='ta'?`<textarea data-k="${k}" rows="2" placeholder="${x.ph||''}"${d}>${esc(cur[k])}</textarea>`:t=='sel'?`<select data-k="${k}"${d}><option value="">Pilih…</option>${opt(x.o,cur[k]||'',x.ex)}</select>`:`<input data-k="${k}" type="${t||'text'}" value="${esc(cur[k])}" placeholder="${x.ph||''}"${d}${t=='number'?' inputmode="decimal" step="any"':''}>`}</label>`};
 function openForm(p){cur=p?JSON.parse(JSON.stringify(p)):{id:'p'+Math.random().toString(36).slice(2,8),tglKonf:TODAY};fotoUrl='';$('#ov').hidden=false;document.body.style.overflow='hidden';drawForm(0)}
 function closeForm(){$('#ov').hidden=true;document.body.style.overflow='';cur=null}
 function drawForm(keep){
@@ -215,6 +220,12 @@ function drawForm(keep){
  ${cur.perlu?`${fld('jp','Jenis pemeriksaan','sel',{o:PLAN})}${fld('tglPeriksa','Target tanggal','date')}<div class="w2"><button class="btn s" data-a="hasil">Hasil pemeriksaan sudah masuk</button></div>`:''}
  ${can&&!lock&&!cur.perlu?`<div class="w2"><button class="btn p" data-a="verify"${ok?'':' disabled'} style="width:100%;justify-content:center">${ic('shield')} Verifikasi keputusan</button>${ok?'':'<div class="sub" style="margin-top:4px">Lengkapi keputusan dan 3 dokter dulu.</div>'}</div>`:!lock&&!cur.perlu?`<div class="rule w2">Verifikasi dilakukan oleh dokter. Pilih peran Dokter di bagian atas beranda untuk mencoba.</div>`:''}</fieldset>
  ${lock||s=='sel'?`<fieldset><legend>${ic('siap',16)} Tindakan</legend>${fld('jenisTindakan','Jenis tindakan','text',{ph:'Contoh: PCI LAD'})}${fld('tglTindakan','Tanggal tindakan','date')}${s!='sel'?`<div class="w2"><button class="btn s" data-a="done">Tandai tindakan selesai</button></div>`:`<div class="rule ok">Selesai ${fmt(cur.selesai)}.</div>`}</fieldset>`:''}
+ <details class="opt" open><summary><span>${ic('per',17)} Laboratorium</span><small>8 pemeriksaan</small></summary><div class="g">
+ ${fld('hiv','Skrining HIV','sel',{o:{NR:'Non-reaktif (NR)',R:'Reaktif (R)'}})}${fld('hbsag','Hepatitis B (HBsAg)','sel',{o:{NR:'Non-reaktif (NR)',R:'Reaktif (R)'}})}
+ ${fld('ureum','Ureum (mg/dL)','number')}${fld('kreatinin','Kreatinin (mg/dL)','number')}
+ ${fld('gda','GD sewaktu / GDA (mg/dL)','number')}${fld('gdp','GD puasa (mg/dL)','number')}
+ ${fld('gd2pp','GD 2 jam PP (mg/dL)','number')}${fld('hba1c','HbA1c (%)','number')}
+ </div></details>
  <details class="opt"><summary><span>${ic('heart',17)} Data klinis</span><small>opsional</small></summary><div class="g">
  ${fld('sts','STS score (%)','number')}${fld('euro','EuroSCORE II (%)','number')}${fld('syn2','SYNTAX II (%)','number')}${fld('syn','SYNTAX score','number')}
  ${fld('ef','EF (%)','number')}${fld('tapse','TAPSE (cm)','number')}${fld('mitral','Mitral','text')}${fld('tric','Tricuspid','text')}${fld('aorta','Aorta','text')}${fld('pulm','Pulmonal','text')}
